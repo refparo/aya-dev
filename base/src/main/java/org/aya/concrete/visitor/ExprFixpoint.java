@@ -114,4 +114,15 @@ public interface ExprFixpoint<P> extends Expr.Visitor<P, @NotNull Expr> {
     return new Expr.BinOpSeq(binOpSeq.sourcePos(),
       binOpSeq.seq().map(e -> new Expr.NamedArg(e.explicit(), e.name(), e.expr().accept(this, p))));
   }
+
+  default @NotNull Expr.TacNode visitTacNode(@NotNull Expr.TacNode node, P p) {
+    return switch (node) {
+      case Expr.ExprTac expr -> new Expr.ExprTac(expr.sourcePos(), expr.expr().accept(this, p));
+      case Expr.ListExprTac list -> new Expr.ListExprTac(list.sourcePos(), list.tacNodes().map(n -> visitTacNode(n, p)));
+    };
+  }
+
+  @Override default Expr visitTac(Expr.@NotNull TacExpr tactic, P p) {
+    return new Expr.TacExpr(tactic.sourcePos(), visitTacNode(tactic.tacNode(), p));
+  }
 }

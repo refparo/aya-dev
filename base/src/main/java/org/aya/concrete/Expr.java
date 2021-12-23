@@ -79,6 +79,7 @@ public sealed interface Expr extends AyaDocile, SourceNode {
     R visitLitString(@NotNull LitStringExpr expr, P p);
     R visitBinOpSeq(@NotNull BinOpSeq binOpSeq, P p);
     R visitError(@NotNull ErrorExpr error, P p);
+    R visitTac(@NotNull TacExpr tactic, P p);
   }
 
   sealed interface WithTerm extends Expr {
@@ -324,6 +325,19 @@ public sealed interface Expr extends AyaDocile, SourceNode {
       return visitor.visitLitString(this, p);
     }
   }
+
+  record TacExpr(@NotNull SourcePos sourcePos, @NotNull TacNode tacNode) implements Expr {
+    @Override public <P, R> R doAccept(@NotNull Visitor<P, R> visitor, P p) {
+      return visitor.visitTac(this, p);
+    }
+  }
+
+  sealed interface TacNode {}
+
+  record ExprTac(@NotNull SourcePos sourcePos, @NotNull Expr expr) implements TacNode {}
+
+  record ListExprTac(@NotNull SourcePos sourcePos, @NotNull ImmutableSeq<TacNode> tacNodes) implements TacNode {}
+
 
   /**
    * @author kiva
